@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <title>Bambara's TextBox</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#c8745a">
@@ -12,27 +12,22 @@
   <meta name="apple-mobile-web-app-title" content="Bambara's TextBox">
   <link rel="apple-touch-icon" href="icon-192.png">
 
-  <!-- React + Babel (aucune compilation requise) -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Firebase (Google Cloud) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito:wght@400;600;700;800&display=swap');
-    :root{
-      --clay:#c8745a; --clay-dark:#b15f47; --ink:#2e2926; --ink-soft:#6b6058;
-      --sand:#f6efe2; --sand-2:#ece1cf; --line:rgba(120,90,60,.16);
-      --paper:#fffaf2; --green:#5e8b6e;
-    }
+    :root{--clay:#c8745a;--clay-dark:#b15f47;--ink:#2e2926;--ink-soft:#6b6058;
+      --sand:#f6efe2;--sand-2:#ece1cf;--line:rgba(120,90,60,.16);--paper:#fffaf2;--green:#5e8b6e;}
     *{box-sizing:border-box;}
     html,body{margin:0;height:100%;}
-    body{font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      color:var(--ink);background:linear-gradient(160deg,#f6efe2,#e7dac6);height:100%;}
+    body{font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);
+      background:linear-gradient(160deg,#f6efe2,#e7dac6);height:100%;}
     #root{height:100%;}
     button{font-family:inherit;cursor:pointer;}
     input{font-family:inherit;}
@@ -43,31 +38,28 @@
     .auth-card .logo{font-size:42px;}
     .auth-card h1{font-family:'Caveat',cursive;font-size:40px;color:var(--clay);margin:4px 0 2px;}
     .auth-card p{color:var(--ink-soft);font-size:14px;margin:0 0 22px;}
-    .field{display:block;width:100%;border:2px solid var(--sand-2);border-radius:13px;
-      padding:13px 15px;font-size:16px;margin-bottom:12px;outline:none;}
+    .field{display:block;width:100%;border:2px solid var(--sand-2);border-radius:13px;padding:13px 15px;
+      font-size:16px;margin-bottom:12px;outline:none;}
     .field:focus{border-color:var(--clay);}
-    .primary{width:100%;background:var(--clay);color:#fff;border:none;border-radius:13px;
-      padding:14px;font-size:16px;font-weight:800;}
+    .primary{width:100%;background:var(--clay);color:#fff;border:none;border-radius:13px;padding:14px;
+      font-size:16px;font-weight:800;}
     .primary:hover{background:var(--clay-dark);}
     .primary:disabled{opacity:.5;}
     .switch{margin-top:16px;font-size:14px;color:var(--ink-soft);}
     .switch b{color:var(--clay);cursor:pointer;}
     .err{background:#f6dcc9;color:#8a3a22;border-radius:10px;padding:9px 12px;font-size:13.5px;margin-bottom:14px;}
 
-    .app{display:flex;height:100%;max-width:1000px;margin:0 auto;background:var(--paper);
-      box-shadow:0 0 60px rgba(70,50,35,.15);}
+    .app{display:flex;height:100%;max-width:1000px;margin:0 auto;background:var(--paper);box-shadow:0 0 60px rgba(70,50,35,.15);}
     .sidebar{width:330px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--sand);}
     .side-head{padding:14px 16px;display:flex;align-items:center;gap:10px;background:var(--clay);color:#fff;}
     .side-id{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0;}
     .side-head .me{font-weight:800;font-size:15px;line-height:1.1;min-width:0;}
     .side-head .me small{font-weight:600;opacity:.85;font-size:12px;}
-    .icon-btn{background:rgba(255,255,255,.18);border:none;color:#fff;
-      width:36px;height:36px;border-radius:50%;font-size:16px;flex-shrink:0;}
+    .icon-btn{background:rgba(255,255,255,.18);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:16px;flex-shrink:0;}
     .icon-btn:hover{background:rgba(255,255,255,.3);}
     .head-actions{margin-left:auto;display:flex;gap:7px;}
     .new-row{display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);}
-    .new-row button{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:11px;
-      padding:9px;font-weight:700;font-size:13.5px;color:var(--ink);}
+    .new-row button{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:9px;font-weight:700;font-size:13.5px;color:var(--ink);}
     .new-row button:hover{border-color:var(--clay);color:var(--clay);}
     .conv-list{flex:1;overflow-y:auto;}
     .conv{display:flex;gap:11px;align-items:center;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--line);}
@@ -76,25 +68,26 @@
     .conv .meta{min-width:0;flex:1;}
     .conv .name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .conv .last{font-size:13px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .conv .tag{font-size:10px;background:rgba(94,139,110,.18);color:var(--green);font-weight:800;
-      padding:1px 7px;border-radius:10px;margin-left:6px;}
+    .conv .tag{font-size:10px;background:rgba(94,139,110,.18);color:var(--green);font-weight:800;padding:1px 7px;border-radius:10px;margin-left:6px;}
     .empty-side{padding:30px 20px;text-align:center;color:var(--ink-soft);font-size:14px;}
 
-    .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
-      font-weight:800;flex-shrink:0;overflow:hidden;object-fit:cover;}
+    .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;overflow:hidden;object-fit:cover;}
 
     .main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;}
     .main-head{display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--paper);}
+    .main-head .hid{display:flex;align-items:center;gap:11px;cursor:pointer;min-width:0;flex:1;}
     .main-head .title{font-weight:800;font-size:16px;}
-    .main-head .subtitle{font-size:12.5px;color:var(--ink-soft);}
+    .main-head .subtitle{font-size:12.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .call-btns{display:flex;gap:7px;}
+    .call-btns button{background:var(--sand);border:1px solid var(--line);border-radius:50%;width:40px;height:40px;font-size:17px;}
+    .call-btns button:hover{border-color:var(--clay);}
     .back-btn{display:none;background:none;border:none;font-size:22px;color:var(--clay);padding:0 4px 0 0;}
-    .messages{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:4px;
-      background:linear-gradient(160deg,#f7f1e6,#efe5d4);}
+    .messages{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:4px;background:linear-gradient(160deg,#f7f1e6,#efe5d4);}
     .row{display:flex;gap:8px;align-items:flex-end;max-width:78%;}
     .row.mine{align-self:flex-end;flex-direction:row-reverse;}
     .row.theirs{align-self:flex-start;}
-    .bubble{padding:9px 14px;border-radius:18px;font-size:15.5px;line-height:1.4;
-      box-shadow:0 1px 4px rgba(70,50,35,.1);word-break:break-word;}
+    .row .avatar{cursor:pointer;}
+    .bubble{padding:9px 14px;border-radius:18px;font-size:15.5px;line-height:1.4;box-shadow:0 1px 4px rgba(70,50,35,.1);word-break:break-word;}
     .bubble.theirs{background:var(--paper);border-bottom-left-radius:5px;}
     .bubble.mine{background:var(--clay);color:#fff;border-bottom-right-radius:5px;}
     .bubble.media{padding:5px 5px 4px;}
@@ -105,10 +98,8 @@
     .tick{font-weight:800;}
     .tick.read{color:#7fe0b0;opacity:1;}
     .composer{display:flex;gap:8px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);background:var(--sand-2);}
-    .composer input.txt{flex:1;border:none;border-radius:22px;padding:12px 18px;font-size:16px;
-      background:var(--paper);outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.06);}
-    .attach{background:var(--paper);border:1px solid var(--line);border-radius:50%;width:42px;height:42px;
-      font-size:18px;flex-shrink:0;}
+    .composer input.txt{flex:1;border:none;border-radius:22px;padding:12px 18px;font-size:16px;background:var(--paper);outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.06);}
+    .attach{background:var(--paper);border:1px solid var(--line);border-radius:50%;width:42px;height:42px;font-size:18px;flex-shrink:0;}
     .attach:hover{border-color:var(--clay);}
     .attach:disabled{opacity:.4;}
     .send{background:var(--clay);color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:18px;flex-shrink:0;}
@@ -121,16 +112,12 @@
     .placeholder{margin:auto;text-align:center;color:var(--ink-soft);padding:30px;}
     .placeholder .big{font-size:46px;margin-bottom:8px;}
 
-    .emoji-panel{position:absolute;bottom:74px;left:12px;right:12px;background:var(--paper);
-      border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 30px rgba(60,40,25,.25);
-      padding:8px;max-height:210px;overflow-y:auto;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;z-index:20;}
+    .emoji-panel{position:absolute;bottom:74px;left:12px;right:12px;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 30px rgba(60,40,25,.25);padding:8px;max-height:210px;overflow-y:auto;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;z-index:20;}
     .emoji-panel button{background:none;border:none;font-size:23px;padding:5px;border-radius:8px;line-height:1;}
     .emoji-panel button:hover{background:var(--sand);}
 
-    .overlay{position:fixed;inset:0;background:rgba(46,41,38,.45);display:flex;align-items:center;
-      justify-content:center;padding:18px;z-index:50;}
-    .modal{background:var(--paper);border-radius:18px;width:100%;max-width:380px;padding:22px;
-      box-shadow:0 20px 50px rgba(0,0,0,.3);max-height:85vh;display:flex;flex-direction:column;}
+    .overlay{position:fixed;inset:0;background:rgba(46,41,38,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50;}
+    .modal{background:var(--paper);border-radius:18px;width:100%;max-width:380px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.3);max-height:85vh;display:flex;flex-direction:column;}
     .modal h2{margin:0 0 14px;font-size:19px;}
     .modal h3{margin:6px 0 10px;font-size:14px;color:var(--ink-soft);font-weight:800;text-transform:uppercase;letter-spacing:.04em;}
     .user-pick{overflow-y:auto;margin-bottom:14px;}
@@ -147,6 +134,43 @@
     .swatch.sel{border-color:var(--ink);}
     .photo-block{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
     .link-btn{background:var(--sand-2);border:none;border-radius:11px;padding:10px 14px;font-weight:700;color:var(--ink);}
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+    .chip{background:var(--sand-2);border:1px solid var(--line);border-radius:16px;padding:7px 13px;font-size:13.5px;font-weight:700;color:var(--ink);}
+    .chip:hover{border-color:var(--clay);color:var(--clay);}
+
+    /* Profil */
+    .prof{display:flex;flex-direction:column;align-items:center;text-align:center;}
+    .prof .big-av{cursor:zoom-in;margin-bottom:14px;}
+    .prof .pname{font-size:22px;font-weight:800;}
+    .prof .pmail{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+    .prof .pabout{margin:16px 0 4px;background:var(--sand);border-radius:12px;padding:12px 14px;font-size:15px;width:100%;}
+    .prof .palabel{font-size:11px;color:var(--ink-soft);font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-align:left;margin-top:14px;}
+
+    /* Lightbox photo */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:90;padding:20px;}
+    .lightbox img{max-width:94vw;max-height:88vh;border-radius:14px;}
+    .lightbox .close{position:absolute;top:18px;right:22px;color:#fff;font-size:30px;background:none;border:none;}
+
+    /* Appel entrant */
+    .incoming{position:fixed;top:0;left:0;right:0;background:var(--clay);color:#fff;z-index:80;padding:14px 18px;display:flex;align-items:center;gap:13px;box-shadow:0 6px 24px rgba(0,0,0,.3);animation:slidein .25s ease;}
+    @keyframes slidein{from{transform:translateY(-100%);}to{transform:none;}}
+    .incoming .who{flex:1;min-width:0;}
+    .incoming .who b{font-size:16px;}
+    .incoming .who div{font-size:12.5px;opacity:.9;}
+    .incoming .ans{background:#3a9d63;border:none;color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;}
+    .incoming .dec{background:#c0392b;border:none;color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;}
+
+    /* Appel en cours */
+    .call-screen{position:fixed;inset:0;background:#1d1916;color:#fff;z-index:85;display:flex;flex-direction:column;align-items:center;}
+    .call-video-remote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;}
+    .call-video-local{position:absolute;top:16px;right:16px;width:108px;height:150px;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,.5);background:#000;z-index:2;}
+    .call-info{position:relative;z-index:2;margin-top:14vh;display:flex;flex-direction:column;align-items:center;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+    .call-info .cname{font-size:26px;font-weight:800;margin-top:14px;}
+    .call-info .cstate{opacity:.85;margin-top:5px;font-size:15px;}
+    .call-controls{position:relative;z-index:3;margin-top:auto;margin-bottom:7vh;display:flex;gap:18px;}
+    .call-controls button{width:62px;height:62px;border-radius:50%;border:none;font-size:24px;color:#fff;background:rgba(255,255,255,.18);}
+    .call-controls .hang{background:#c0392b;}
+    .call-controls .on{background:#fff;color:var(--ink);}
 
     @media (max-width:760px){
       .app{max-width:none;}
@@ -161,10 +185,6 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react">
-    /* =======================================================================
-       CONFIGURATION — colle ici la config de TON projet Firebase.
-       (Console Firebase -> Parametres du projet -> Tes applications -> Web)
-       ======================================================================= */
     const firebaseConfig = {
       apiKey: "AIzaSyCD_pSdJA9ZZUREiu7_gdLG1_MHz1IfIAc",
       authDomain: "bambara-s-textbox.firebaseapp.com",
@@ -173,20 +193,18 @@
       messagingSenderId: "47764558242",
       appId: "1:47764558242:web:e13d483b8dc353f153a2fb"
     };
-    /* ===================================================================== */
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
     const TS = firebase.firestore.FieldValue.serverTimestamp;
+    const ICE = {iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]};
 
     const { useState, useEffect, useRef } = React;
 
     const APP_NAME = "Bambara's TextBox";
-
-    const THEME_COLORS = ["#c8745a","#b1492f","#d4956b","#c9a24b","#5e8b6e","#3f7d6e",
-      "#7a9e9f","#6e7fa8","#4a5d8a","#8e7cc3","#a8607e","#2e2926"];
-
+    const THEME_COLORS = ["#c8745a","#b1492f","#d4956b","#c9a24b","#5e8b6e","#3f7d6e","#7a9e9f","#6e7fa8","#4a5d8a","#8e7cc3","#a8607e","#2e2926"];
+    const ABOUT_PRESETS = ["Disponible","Occupé","À l'école","Au travail","En réunion","Ne pas déranger","En vacances","Batterie faible"];
     const EMOJIS = ("😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😋 😛 😜 🤪 😎 🥳 "+
       "😏 😴 😪 😔 😟 🙁 😣 😫 😩 🥺 😢 😭 😤 😠 😡 🤯 😳 🥵 🥶 😱 😨 🤗 🤔 🤭 🙄 😬 "+
       "👍 👎 👌 ✌️ 🤞 🤟 👏 🙌 🙏 🤝 💪 👋 👆 👇 👉 👈 ✋ "+
@@ -204,10 +222,7 @@
       let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
       r=Math.round(r*(1-amt));g=Math.round(g*(1-amt));b=Math.round(b*(1-amt));
       return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");}
-
     function readAsDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
-
-    // Reduit et compresse une image cote navigateur pour qu'elle tienne dans Firestore (gratuit)
     async function compressImage(file,maxDim){
       maxDim=maxDim||1024;
       const src=await readAsDataURL(file);
@@ -222,153 +237,198 @@
       return out;
     }
 
-    function Avatar({name,photo,size=42}){
-      if(photo) return <img className="avatar" src={photo} style={{width:size,height:size}} alt=""/>;
-      return <div className="avatar" style={{width:size,height:size,fontSize:size*0.38,background:colorFor(name)}}>{initials(name)}</div>;
+    function Avatar({name,photo,size=42,onClick}){
+      const style={width:size,height:size};
+      if(photo) return <img className="avatar" src={photo} style={style} onClick={onClick} alt=""/>;
+      return <div className="avatar" style={{...style,fontSize:size*0.38,background:colorFor(name)}} onClick={onClick}>{initials(name)}</div>;
     }
 
-    /* ---------------- Connexion / inscription ---------------- */
+    /* ---------- Connexion ---------- */
     function AuthScreen(){
       const [mode,setMode]=useState("login");
-      const [name,setName]=useState("");
-      const [email,setEmail]=useState("");
-      const [pw,setPw]=useState("");
-      const [err,setErr]=useState("");
-      const [busy,setBusy]=useState(false);
-
+      const [name,setName]=useState(""),[email,setEmail]=useState(""),[pw,setPw]=useState("");
+      const [err,setErr]=useState(""),[busy,setBusy]=useState(false);
       async function submit(e){
-        e.preventDefault();
-        setErr("");setBusy(true);
+        e.preventDefault();setErr("");setBusy(true);
         try{
           if(mode==="register"){
             if(name.trim().length<2){setErr("Indique ton prenom.");setBusy(false);return;}
             const cred=await auth.createUserWithEmailAndPassword(email.trim(),pw);
             await cred.user.updateProfile({displayName:name.trim()});
-            await db.collection("users").doc(cred.user.uid).set({
-              uid:cred.user.uid,email:email.trim(),displayName:name.trim(),createdAt:TS()
-            });
-          }else{
-            await auth.signInWithEmailAndPassword(email.trim(),pw);
-          }
+            await db.collection("users").doc(cred.user.uid).set({uid:cred.user.uid,email:email.trim(),displayName:name.trim(),about:"",createdAt:TS()});
+          }else{ await auth.signInWithEmailAndPassword(email.trim(),pw); }
         }catch(ex){
-          const m={
-            "auth/invalid-email":"Adresse e-mail invalide.",
-            "auth/email-already-in-use":"Cette adresse est deja inscrite.",
-            "auth/weak-password":"Mot de passe trop court (6 caracteres minimum).",
-            "auth/invalid-credential":"E-mail ou mot de passe incorrect.",
-            "auth/wrong-password":"Mot de passe incorrect.",
-            "auth/user-not-found":"Aucun compte avec cette adresse."
-          }[ex.code]||ex.message;
+          const m={"auth/invalid-email":"Adresse e-mail invalide.","auth/email-already-in-use":"Cette adresse est deja inscrite.",
+            "auth/weak-password":"Mot de passe trop court (6 caracteres minimum).","auth/invalid-credential":"E-mail ou mot de passe incorrect.",
+            "auth/wrong-password":"Mot de passe incorrect.","auth/user-not-found":"Aucun compte avec cette adresse."}[ex.code]||ex.message;
           setErr(m);
         }
         setBusy(false);
       }
-
       return (
-        <div className="auth-wrap">
-          <div className="auth-card">
-            <div className="logo">🏡</div>
-            <h1>{APP_NAME}</h1>
-            <p>{mode==="register"?"Cree ton compte pour rejoindre la famille.":"Connecte-toi pour retrouver tes conversations."}</p>
-            {err && <div className="err">{err}</div>}
-            <form onSubmit={submit}>
-              {mode==="register" &&
-                <input className="field" placeholder="Ton prenom" value={name} onChange={e=>setName(e.target.value)} />}
-              <input className="field" type="email" placeholder="Adresse e-mail" value={email} onChange={e=>setEmail(e.target.value)} />
-              <input className="field" type="password" placeholder="Mot de passe" value={pw} onChange={e=>setPw(e.target.value)} />
-              <button className="primary" disabled={busy}>{busy?"...":(mode==="register"?"Creer mon compte":"Se connecter")}</button>
-            </form>
-            <div className="switch">
-              {mode==="register"
-                ? <>Deja un compte ? <b onClick={()=>{setMode("login");setErr("");}}>Se connecter</b></>
-                : <>Pas encore de compte ? <b onClick={()=>{setMode("register");setErr("");}}>S'inscrire</b></>}
-            </div>
-          </div>
-        </div>
+        <div className="auth-wrap"><div className="auth-card">
+          <div className="logo">🏡</div><h1>{APP_NAME}</h1>
+          <p>{mode==="register"?"Cree ton compte pour rejoindre la famille.":"Connecte-toi pour retrouver tes conversations."}</p>
+          {err && <div className="err">{err}</div>}
+          <form onSubmit={submit}>
+            {mode==="register" && <input className="field" placeholder="Ton prenom" value={name} onChange={e=>setName(e.target.value)} />}
+            <input className="field" type="email" placeholder="Adresse e-mail" value={email} onChange={e=>setEmail(e.target.value)} />
+            <input className="field" type="password" placeholder="Mot de passe" value={pw} onChange={e=>setPw(e.target.value)} />
+            <button className="primary" disabled={busy}>{busy?"...":(mode==="register"?"Creer mon compte":"Se connecter")}</button>
+          </form>
+          <div className="switch">{mode==="register"
+            ? <>Deja un compte ? <b onClick={()=>{setMode("login");setErr("");}}>Se connecter</b></>
+            : <>Pas encore de compte ? <b onClick={()=>{setMode("register");setErr("");}}>S'inscrire</b></>}</div>
+        </div></div>
       );
     }
 
-    /* ---------------- Reglages : photo + couleur ---------------- */
-    function SettingsModal({profile,onClose}){
+    /* ---------- Mon profil (reglages) ---------- */
+    function SettingsModal({profile,onClose,onZoom}){
       const fileRef=useRef(null);
       const [busy,setBusy]=useState(false);
-
+      const [about,setAbout]=useState(profile.about||"");
       async function pickPhoto(e){
         const f=e.target.files[0];e.target.value="";
         if(!f)return;setBusy(true);
-        try{
-          const url=await compressImage(f,256);
-          await db.collection("users").doc(profile.uid).set({photoURL:url},{merge:true});
-        }catch(err){alert("Echec du changement de photo.");}
+        try{const url=await compressImage(f,256);await db.collection("users").doc(profile.uid).set({photoURL:url},{merge:true});}
+        catch(err){alert("Echec du changement de photo.");}
         setBusy(false);
       }
-      async function chooseColor(c){
-        await db.collection("users").doc(profile.uid).set({themeColor:c},{merge:true});
-      }
-
+      function chooseColor(c){db.collection("users").doc(profile.uid).set({themeColor:c},{merge:true});}
+      function saveAbout(v){setAbout(v);db.collection("users").doc(profile.uid).set({about:v},{merge:true});}
       return (
-        <div className="overlay" onClick={onClose}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <h2>Mon profil</h2>
-            <h3>Photo de profil</h3>
-            <div className="photo-block">
-              <Avatar name={profile.displayName} photo={profile.photoURL} size={66}/>
-              <input type="file" accept="image/*" ref={fileRef} style={{display:"none"}} onChange={pickPhoto}/>
-              <button className="link-btn" disabled={busy} onClick={()=>fileRef.current.click()}>{busy?"Envoi...":"Changer la photo"}</button>
-            </div>
-            <h3>Couleur du theme</h3>
-            <div className="swatch-row">
-              {THEME_COLORS.map(c=>(
-                <div key={c} className={"swatch"+((profile.themeColor||"#c8745a")===c?" sel":"")}
-                  style={{background:c}} onClick={()=>chooseColor(c)}/>
-              ))}
-            </div>
-            <div className="modal-actions"><button className="primary" onClick={onClose}>Terminer</button></div>
+        <div className="overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
+          <h2>Mon profil</h2>
+          <h3>Photo de profil</h3>
+          <div className="photo-block">
+            <Avatar name={profile.displayName} photo={profile.photoURL} size={66} onClick={()=>profile.photoURL&&onZoom(profile.photoURL)}/>
+            <input type="file" accept="image/*" ref={fileRef} style={{display:"none"}} onChange={pickPhoto}/>
+            <button className="link-btn" disabled={busy} onClick={()=>fileRef.current.click()}>{busy?"Envoi...":"Changer la photo"}</button>
           </div>
-        </div>
+          <h3>À propos</h3>
+          <input className="field" value={about} maxLength={120} placeholder="Ex. un proverbe, ton humeur..." onChange={e=>setAbout(e.target.value)} onBlur={e=>saveAbout(e.target.value)}/>
+          <div className="chip-row">{ABOUT_PRESETS.map(p=><button key={p} className="chip" onClick={()=>saveAbout(p)}>{p}</button>)}</div>
+          <h3>Couleur du theme</h3>
+          <div className="swatch-row">{THEME_COLORS.map(c=>(
+            <div key={c} className={"swatch"+((profile.themeColor||"#c8745a")===c?" sel":"")} style={{background:c}} onClick={()=>chooseColor(c)}/>
+          ))}</div>
+          <div className="modal-actions"><button className="primary" onClick={onClose}>Terminer</button></div>
+        </div></div>
       );
     }
 
-    /* ---------------- Fenetre : nouvelle conversation ---------------- */
-    function NewChatModal({kind,me,users,userMap,onClose,onCreate}){
+    /* ---------- Voir le profil de quelqu'un ---------- */
+    function ProfileModal({person,isMe,onClose,onZoom,onMessage,onCall,onEdit}){
+      return (
+        <div className="overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
+          <div className="prof">
+            <div className="big-av" onClick={()=>person.photoURL&&onZoom(person.photoURL)}>
+              <Avatar name={person.displayName} photo={person.photoURL} size={120}/>
+            </div>
+            <div className="pname">{person.displayName}</div>
+            {person.email && <div className="pmail">{person.email}</div>}
+            {person.about ? <><div className="palabel">À propos</div><div className="pabout">{person.about}</div></>
+              : <div className="palabel" style={{textAlign:"center",marginTop:16}}>Aucune info "À propos"</div>}
+          </div>
+          <div style={{height:16}}/>
+          {isMe ? (
+            <div className="modal-actions">
+              <button className="ghost" onClick={onClose}>Fermer</button>
+              <button className="primary" onClick={onEdit}>Modifier</button>
+            </div>
+          ) : (
+            <>
+              <div className="modal-actions" style={{marginBottom:10}}>
+                <button className="ghost" onClick={()=>onCall("audio")}>📞 Appel</button>
+                <button className="ghost" onClick={()=>onCall("video")}>🎥 Vidéo</button>
+              </div>
+              <div className="modal-actions">
+                <button className="ghost" onClick={onClose}>Fermer</button>
+                <button className="primary" onClick={onMessage}>💬 Message</button>
+              </div>
+            </>
+          )}
+        </div></div>
+      );
+    }
+
+    /* ---------- Membres d'un groupe ---------- */
+    function MembersModal({conv,userMap,onClose,onPick}){
+      return (
+        <div className="overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
+          <h2>{conv.name}</h2>
+          <h3>{conv.members.length} membres</h3>
+          <div className="user-pick" style={{maxHeight:340}}>
+            {conv.members.map(uid=>{const u=userMap[uid]||{displayName:(conv.memberNames&&conv.memberNames[uid])||"?"};
+              return (
+                <div key={uid} className="user-row" onClick={()=>onPick(uid)}>
+                  <Avatar name={u.displayName} photo={u.photoURL} size={42}/>
+                  <div><div className="nm">{u.displayName}</div>{u.about&&<div className="em">{u.about}</div>}</div>
+                </div>
+              );})}
+          </div>
+          <div className="modal-actions"><button className="primary" onClick={onClose}>Fermer</button></div>
+        </div></div>
+      );
+    }
+
+    /* ---------- Nouvelle conversation ---------- */
+    function NewChatModal({kind,me,users,onClose,onCreate}){
       const others=users.filter(u=>u.uid!==me.uid);
-      const [selected,setSelected]=useState([]);
-      const [groupName,setGroupName]=useState("");
+      const [selected,setSelected]=useState([]),[groupName,setGroupName]=useState("");
       const isGroup=kind==="group";
       function toggle(uid){setSelected(s=>s.includes(uid)?s.filter(x=>x!==uid):[...s,uid]);}
-
       return (
-        <div className="overlay" onClick={onClose}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <h2>{isGroup?"Nouveau groupe":"Nouvelle conversation"}</h2>
-            {isGroup &&
-              <input className="field" placeholder="Nom du groupe (ex. Les cousins)" value={groupName} onChange={e=>setGroupName(e.target.value)} />}
-            <div className="user-pick" style={{maxHeight:isGroup?260:320}}>
-              {others.length===0 && <div className="empty-side">Personne d'autre n'est encore inscrit. Invite ta famille a creer un compte !</div>}
-              {others.map(u=>(
-                <div key={u.uid} className="user-row" onClick={()=>isGroup?toggle(u.uid):onCreate([u.uid],null)}>
-                  <Avatar name={u.displayName} photo={u.photoURL} size={40}/>
-                  <div>
-                    <div className="nm">{u.displayName}</div>
-                    <div className="em">{u.email}</div>
-                  </div>
-                  {isGroup && <div className="check">{selected.includes(u.uid)?"☑":"☐"}</div>}
-                </div>
-              ))}
-            </div>
-            <div className="modal-actions">
-              <button className="ghost" onClick={onClose}>Annuler</button>
-              {isGroup &&
-                <button className="primary" style={{flex:1}}
-                  disabled={selected.length===0||groupName.trim().length<2}
-                  onClick={()=>onCreate(selected,groupName.trim())}>Creer le groupe</button>}
-            </div>
+        <div className="overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
+          <h2>{isGroup?"Nouveau groupe":"Nouvelle conversation"}</h2>
+          {isGroup && <input className="field" placeholder="Nom du groupe (ex. Les cousins)" value={groupName} onChange={e=>setGroupName(e.target.value)} />}
+          <div className="user-pick" style={{maxHeight:isGroup?260:320}}>
+            {others.length===0 && <div className="empty-side">Personne d'autre n'est encore inscrit. Invite ta famille a creer un compte !</div>}
+            {others.map(u=>(
+              <div key={u.uid} className="user-row" onClick={()=>isGroup?toggle(u.uid):onCreate([u.uid],null)}>
+                <Avatar name={u.displayName} photo={u.photoURL} size={40}/>
+                <div><div className="nm">{u.displayName}</div><div className="em">{u.email}</div></div>
+                {isGroup && <div className="check">{selected.includes(u.uid)?"☑":"☐"}</div>}
+              </div>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button className="ghost" onClick={onClose}>Annuler</button>
+            {isGroup && <button className="primary" style={{flex:1}} disabled={selected.length===0||groupName.trim().length<2}
+              onClick={()=>onCreate(selected,groupName.trim())}>Creer le groupe</button>}
+          </div>
+        </div></div>
+      );
+    }
+
+    /* ---------- Ecran d'appel en cours ---------- */
+    function CallScreen({call,localStream,remoteStream,muted,camOff,onMute,onCam,onHang}){
+      const rv=useRef(null),lv=useRef(null),ra=useRef(null);
+      useEffect(()=>{if(rv.current&&remoteStream)rv.current.srcObject=remoteStream;if(ra.current&&remoteStream)ra.current.srcObject=remoteStream;},[remoteStream]);
+      useEffect(()=>{if(lv.current&&localStream)lv.current.srcObject=localStream;},[localStream]);
+      const isVideo=call.type==="video";
+      const label=call.state==="ringing"?"Appel en cours...":call.state==="connecting"?"Connexion...":call.state==="active"?fmtDur(call.seconds||0):"Terminé";
+      return (
+        <div className="call-screen">
+          {isVideo && <video ref={rv} className="call-video-remote" autoPlay playsInline></video>}
+          {isVideo && <video ref={lv} className="call-video-local" autoPlay playsInline muted></video>}
+          {!isVideo && <audio ref={ra} autoPlay></audio>}
+          <div className="call-info">
+            {!isVideo && <Avatar name={call.peer.name} photo={call.peer.photoURL} size={110}/>}
+            <div className="cname">{call.peer.name}</div>
+            <div className="cstate">{label}</div>
+          </div>
+          <div className="call-controls">
+            <button className={muted?"on":""} onClick={onMute} title="Micro">{muted?"🔇":"🎙️"}</button>
+            {isVideo && <button className={camOff?"on":""} onClick={onCam} title="Caméra">{camOff?"📷":"🎥"}</button>}
+            <button className="hang" onClick={onHang} title="Raccrocher">📵</button>
           </div>
         </div>
       );
     }
 
-    /* ---------------- Application principale ---------------- */
+    /* ---------- Application ---------- */
     function ChatApp({user}){
       const [users,setUsers]=useState([]);
       const [convs,setConvs]=useState([]);
@@ -377,42 +437,70 @@
       const [draft,setDraft]=useState("");
       const [modal,setModal]=useState(null);
       const [settings,setSettings]=useState(false);
+      const [viewUid,setViewUid]=useState(null);
+      const [members,setMembers]=useState(false);
+      const [zoom,setZoom]=useState(null);
       const [showEmoji,setShowEmoji]=useState(false);
       const [uploading,setUploading]=useState(false);
       const [recording,setRecording]=useState(false);
       const [recSec,setRecSec]=useState(0);
-      const scroller=useRef(null);
-      const fileRef=useRef(null);
-      const recRef=useRef(null);
-      const chunksRef=useRef([]);
+      // appels
+      const [incoming,setIncoming]=useState(null);
+      const [call,setCall]=useState(null);
+      const [localStream,setLocalStream]=useState(null);
+      const [remoteStream,setRemoteStream]=useState(null);
+      const [muted,setMuted]=useState(false);
+      const [camOff,setCamOff]=useState(false);
+
+      const scroller=useRef(null),fileRef=useRef(null),recRef=useRef(null),chunksRef=useRef([]);
+      const pcRef=useRef(null),callRefRef=useRef(null),callUnsubs=useRef([]);
 
       useEffect(()=>db.collection("users").onSnapshot(s=>setUsers(s.docs.map(d=>d.data()))),[]);
-
-      useEffect(()=>db.collection("conversations").where("members","array-contains",user.uid)
-        .onSnapshot(s=>{
-          const list=s.docs.map(d=>({id:d.id,...d.data()}));
-          list.sort((a,b)=>(ms(b.lastMessageAt)||ms(b.createdAt))-(ms(a.lastMessageAt)||ms(a.createdAt)));
-          setConvs(list);
-        }),[user.uid]);
-
+      useEffect(()=>db.collection("conversations").where("members","array-contains",user.uid).onSnapshot(s=>{
+        const list=s.docs.map(d=>({id:d.id,...d.data()}));
+        list.sort((a,b)=>(ms(b.lastMessageAt)||ms(b.createdAt))-(ms(a.lastMessageAt)||ms(a.createdAt)));
+        setConvs(list);
+      }),[user.uid]);
       useEffect(()=>{
         if(!activeId){setMessages([]);return;}
-        return db.collection("conversations").doc(activeId).collection("messages").orderBy("createdAt","asc")
-          .onSnapshot(s=>{
-            const list=s.docs.map(d=>({id:d.id,...d.data()}));
-            setMessages(list);
-            if(list.length) db.collection("conversations").doc(activeId).update({["reads."+user.uid]:TS()}).catch(()=>{});
-          });
+        return db.collection("conversations").doc(activeId).collection("messages").orderBy("createdAt","asc").onSnapshot(s=>{
+          const list=s.docs.map(d=>({id:d.id,...d.data()}));setMessages(list);
+          if(list.length) db.collection("conversations").doc(activeId).update({["reads."+user.uid]:TS()}).catch(()=>{});
+        });
       },[activeId]);
-
       useEffect(()=>{if(scroller.current)scroller.current.scrollTop=scroller.current.scrollHeight;},[messages]);
-
       useEffect(()=>{if(!recording){setRecSec(0);return;}const id=setInterval(()=>setRecSec(s=>s+1),1000);return ()=>clearInterval(id);},[recording]);
 
-      const userMap={};users.forEach(u=>{userMap[u.uid]=u;});
+      // minuterie d'appel
+      useEffect(()=>{
+        if(!call||call.state!=="active")return;
+        const id=setInterval(()=>setCall(c=>c?{...c,seconds:(c.seconds||0)+1}:c),1000);
+        return ()=>clearInterval(id);
+      },[call&&call.state]);
+
+      // detection des appels entrants
+      useEffect(()=>{
+        return db.collection("calls").where("calleeId","==",user.uid).onSnapshot(s=>{
+          s.docChanges().forEach(ch=>{
+            const d=ch.doc.data();
+            const recent=Date.now()-(ms(d.createdAt)||Date.now())<60000;
+            if((ch.type==="added"||ch.type==="modified")){
+              if(d.status==="ringing" && recent && !pcRef.current){
+                const u=usersRef.current.find(x=>x.uid===d.callerId)||{};
+                setIncoming({id:ch.doc.id,callerId:d.callerId,callerName:d.callerName,type:d.type,photoURL:u.photoURL});
+              }else{
+                setIncoming(inc=>inc&&inc.id===ch.doc.id?null:inc);
+              }
+            }
+            if(ch.type==="removed") setIncoming(inc=>inc&&inc.id===ch.doc.id?null:inc);
+          });
+        });
+      },[user.uid]);
+
+      const usersRef=useRef([]); usersRef.current=users;
+      const userMap={}; users.forEach(u=>{userMap[u.uid]=u;});
       const myProfile={uid:user.uid,displayName:user.displayName,email:user.email,...(userMap[user.uid]||{})};
 
-      // applique la couleur de theme choisie
       useEffect(()=>{
         const c=myProfile.themeColor||"#c8745a";
         document.documentElement.style.setProperty("--clay",c);
@@ -420,70 +508,39 @@
       },[myProfile.themeColor]);
 
       const active=convs.find(c=>c.id===activeId);
-
-      function convTitle(c){
-        if(!c)return"";
-        if(c.type==="group")return c.name;
-        const o=c.members.find(u=>u!==user.uid);
-        return (c.memberNames&&c.memberNames[o])||"Conversation";
-      }
-      function convPhoto(c){
-        if(c.type==="group")return null;
-        const o=c.members.find(u=>u!==user.uid);
-        return userMap[o]&&userMap[o].photoURL;
-      }
-      function convSubtitle(c){return c.type==="group"?c.members.length+" membres":"Conversation privee";}
-
-      function isRead(m){
-        if(!active||!active.reads)return false;
-        const others=active.members.filter(u=>u!==user.uid);
-        if(others.length===0)return false;
-        return others.every(u=>active.reads[u]&&ms(active.reads[u])>=ms(m.createdAt));
-      }
+      const otherUid=active&&active.type==="direct"?active.members.find(u=>u!==user.uid):null;
+      function convTitle(c){if(!c)return"";if(c.type==="group")return c.name;const o=c.members.find(u=>u!==user.uid);return (c.memberNames&&c.memberNames[o])||"Conversation";}
+      function convPhoto(c){if(c.type==="group")return null;const o=c.members.find(u=>u!==user.uid);return userMap[o]&&userMap[o].photoURL;}
+      function convSubtitle(c){if(c.type==="group")return c.members.length+" membres";const o=c.members.find(u=>u!==user.uid);const ab=userMap[o]&&userMap[o].about;return ab||"Conversation privée";}
+      function isRead(m){if(!active||!active.reads)return false;const others=active.members.filter(u=>u!==user.uid);if(others.length===0)return false;return others.every(u=>active.reads[u]&&ms(active.reads[u])>=ms(m.createdAt));}
 
       async function openDirect(otherUid){
-        const id=directId(user.uid,otherUid);
-        const other=userMap[otherUid];
+        const id=directId(user.uid,otherUid);const other=userMap[otherUid];
         const ref=db.collection("conversations").doc(id);
         let exists=false;
         try{const snap=await ref.get();exists=snap.exists;}catch(e){exists=false;}
         if(!exists){
-          try{
-            await ref.set({type:"direct",members:[user.uid,otherUid],
-              memberNames:{[user.uid]:user.displayName,[otherUid]:(other&&other.displayName)||"?"},
-              createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:""});
-          }catch(e){alert("Impossible d'ouvrir la conversation : "+e.message);return;}
+          try{await ref.set({type:"direct",members:[user.uid,otherUid],
+            memberNames:{[user.uid]:user.displayName,[otherUid]:(other&&other.displayName)||"?"},
+            createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:""});}
+          catch(e){alert("Impossible d'ouvrir la conversation : "+e.message);return;}
         }
-        setModal(null);setActiveId(id);
+        setModal(null);setViewUid(null);setActiveId(id);
       }
       async function createGroup(memberUids,name){
-        const members=[user.uid,...memberUids];
-        const memberNames={[user.uid]:user.displayName};
+        const members=[user.uid,...memberUids];const memberNames={[user.uid]:user.displayName};
         memberUids.forEach(uid=>{if(userMap[uid])memberNames[uid]=userMap[uid].displayName;});
-        const ref=await db.collection("conversations").add({type:"group",name,members,memberNames,
-          createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:""});
+        const ref=await db.collection("conversations").add({type:"group",name,members,memberNames,createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:""});
         setModal(null);setActiveId(ref.id);
       }
       async function pushMessage(data,preview){
-        await db.collection("conversations").doc(activeId).collection("messages").add({
-          senderId:user.uid,senderName:user.displayName,createdAt:TS(),...data});
+        await db.collection("conversations").doc(activeId).collection("messages").add({senderId:user.uid,senderName:user.displayName,createdAt:TS(),...data});
         await db.collection("conversations").doc(activeId).update({lastMessage:preview,lastMessageAt:TS()});
       }
-      async function sendText(e){
-        e.preventDefault();
-        const text=draft.trim();
-        if(!text||!activeId)return;
-        setDraft("");setShowEmoji(false);
-        await pushMessage({type:"text",text},text);
-      }
+      async function sendText(e){e.preventDefault();const text=draft.trim();if(!text||!activeId)return;setDraft("");setShowEmoji(false);await pushMessage({type:"text",text},text);}
       async function onPickImage(e){
-        const f=e.target.files[0];e.target.value="";
-        if(!f||!activeId)return;
-        setUploading(true);
-        try{
-          const url=await compressImage(f,1024);
-          await pushMessage({type:"image",url},"📷 Photo");
-        }catch(err){alert("Echec de l'envoi de l'image.");}
+        const f=e.target.files[0];e.target.value="";if(!f||!activeId)return;setUploading(true);
+        try{const url=await compressImage(f,1024);await pushMessage({type:"image",url},"📷 Photo");}catch(err){alert("Echec de l'envoi de l'image.");}
         setUploading(false);
       }
       async function toggleRec(){
@@ -491,22 +548,17 @@
         if(!window.MediaRecorder){alert("Ton navigateur ne gere pas l'enregistrement vocal.");return;}
         try{
           const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-          const types=["audio/webm","audio/mp4","audio/ogg"];
-          const mime=types.find(t=>MediaRecorder.isTypeSupported(t))||"";
+          const types=["audio/webm","audio/mp4","audio/ogg"];const mime=types.find(t=>MediaRecorder.isTypeSupported(t))||"";
           const rec=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000});
-          chunksRef.current=[];
-          rec.ondataavailable=e=>{if(e.data&&e.data.size)chunksRef.current.push(e.data);};
+          chunksRef.current=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunksRef.current.push(e.data);};
           const autoStop=setTimeout(()=>{try{if(rec.state==="recording")rec.stop();}catch(e){}},60000);
           rec.onstop=async()=>{
-            clearTimeout(autoStop);
-            stream.getTracks().forEach(t=>t.stop());setRecording(false);
-            const blob=new Blob(chunksRef.current,{type:mime||"audio/webm"});
-            setUploading(true);
-            try{
-              const url=await readAsDataURL(blob);
+            clearTimeout(autoStop);stream.getTracks().forEach(t=>t.stop());setRecording(false);
+            const blob=new Blob(chunksRef.current,{type:mime||"audio/webm"});setUploading(true);
+            try{const url=await readAsDataURL(blob);
               if(url.length>950000){alert("Note vocale trop longue, reessaie en plus court (max ~1 min).");setUploading(false);return;}
-              await pushMessage({type:"audio",url},"🎤 Note vocale");
-            }catch(err){alert("Echec de l'envoi de la note vocale.");}
+              await pushMessage({type:"audio",url},"🎤 Note vocale");}
+            catch(err){alert("Echec de l'envoi de la note vocale.");}
             setUploading(false);
           };
           recRef.current=rec;rec.start();setRecording(true);
@@ -514,11 +566,82 @@
       }
       function handleCreate(uids,name){if(name===null)openDirect(uids[0]);else createGroup(uids,name);}
 
+      /* ----- APPELS (WebRTC) ----- */
+      function cleanupCall(){
+        try{if(pcRef.current){pcRef.current.getSenders().forEach(s=>{try{s.track&&s.track.stop();}catch(e){}});pcRef.current.close();}}catch(e){}
+        pcRef.current=null;
+        callUnsubs.current.forEach(u=>{try{u();}catch(e){}});callUnsubs.current=[];
+        setLocalStream(ls=>{if(ls)ls.getTracks().forEach(t=>t.stop());return null;});
+        setRemoteStream(null);setMuted(false);setCamOff(false);
+      }
+      function endCall(){
+        const ref=callRefRef.current;
+        if(ref){ref.update({status:"ended"}).catch(()=>{});setTimeout(()=>ref.delete().catch(()=>{}),1500);}
+        callRefRef.current=null;cleanupCall();setCall(null);
+      }
+      function newPC(callRef,localCol,remoteCol){
+        const pc=new RTCPeerConnection(ICE);pcRef.current=pc;
+        const remote=new MediaStream();setRemoteStream(remote);
+        pc.ontrack=e=>{e.streams[0].getTracks().forEach(t=>remote.addTrack(t));};
+        pc.onicecandidate=e=>{if(e.candidate)callRef.collection(localCol).add(e.candidate.toJSON()).catch(()=>{});};
+        const unsub=callRef.collection(remoteCol).onSnapshot(s=>{s.docChanges().forEach(ch=>{if(ch.type==="added"){try{pc.addIceCandidate(new RTCIceCandidate(ch.doc.data()));}catch(e){}}});});
+        callUnsubs.current.push(unsub);
+        return pc;
+      }
+      async function startCall(peerUid,type){
+        if(pcRef.current){return;}
+        const peer=userMap[peerUid]||{displayName:"?"};
+        let stream;
+        try{stream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});}
+        catch(e){alert("Micro/caméra inaccessible. Autorise l'accès dans le navigateur.");return;}
+        setLocalStream(stream);
+        const callRef=db.collection("calls").doc();callRefRef.current=callRef;
+        const pc=newPC(callRef,"callerCandidates","calleeCandidates");
+        stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+        const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+        await callRef.set({callerId:user.uid,callerName:user.displayName,calleeId:peerUid,calleeName:peer.displayName,
+          type,status:"ringing",offer:{type:offer.type,sdp:offer.sdp},createdAt:TS()});
+        setCall({id:callRef.id,peer:{uid:peerUid,name:peer.displayName,photoURL:peer.photoURL},dir:"out",type,state:"ringing",seconds:0});
+        const unsub=callRef.onSnapshot(snap=>{
+          const d=snap.data();if(!d)return;
+          if(d.answer && pcRef.current && !pcRef.current.currentRemoteDescription){
+            pcRef.current.setRemoteDescription(new RTCSessionDescription(d.answer)).catch(()=>{});
+            setCall(c=>c?{...c,state:"active"}:c);
+          }
+          if(d.status==="declined"){alert("Appel refusé.");endCall();}
+          if(d.status==="ended" && call&&call.dir==="out"){endCall();}
+        });
+        callUnsubs.current.push(unsub);
+        setViewUid(null);
+      }
+      async function acceptCall(inc){
+        let stream;
+        try{stream=await navigator.mediaDevices.getUserMedia({audio:true,video:inc.type==="video"});}
+        catch(e){alert("Micro/caméra inaccessible.");declineCall(inc);return;}
+        setLocalStream(stream);setIncoming(null);
+        const callRef=db.collection("calls").doc(inc.id);callRefRef.current=callRef;
+        const pc=newPC(callRef,"calleeCandidates","callerCandidates");
+        stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+        const snap=await callRef.get();const d=snap.data();if(!d){cleanupCall();return;}
+        await pc.setRemoteDescription(new RTCSessionDescription(d.offer));
+        const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
+        await callRef.update({answer:{type:answer.type,sdp:answer.sdp},status:"accepted"});
+        const peer=userMap[inc.callerId]||{};
+        setCall({id:inc.id,peer:{uid:inc.callerId,name:inc.callerName,photoURL:peer.photoURL},dir:"in",type:inc.type,state:"active",seconds:0});
+        const unsub=callRef.onSnapshot(s=>{const dd=s.data();if(dd&&dd.status==="ended")endCall();});
+        callUnsubs.current.push(unsub);
+      }
+      function declineCall(inc){db.collection("calls").doc(inc.id).update({status:"declined"}).catch(()=>{});setIncoming(null);}
+      function toggleMute(){const ls=localStream;if(!ls)return;const on=!muted;ls.getAudioTracks().forEach(t=>t.enabled=!on);setMuted(on);}
+      function toggleCam(){const ls=localStream;if(!ls)return;const off=!camOff;ls.getVideoTracks().forEach(t=>t.enabled=!off);setCamOff(off);}
+
+      const viewPerson=viewUid?(userMap[viewUid]||{uid:viewUid,displayName:"?"}):null;
+
       return (
         <div className={"app"+(activeId?" has-active":"")}>
           <div className="sidebar">
             <div className="side-head">
-              <div className="side-id" onClick={()=>setSettings(true)} title="Mon profil">
+              <div className="side-id" onClick={()=>setViewUid(user.uid)} title="Mon profil">
                 <Avatar name={myProfile.displayName} photo={myProfile.photoURL} size={40}/>
                 <div className="me">{myProfile.displayName}<br/><small>Voir mon profil</small></div>
               </div>
@@ -536,10 +659,8 @@
               {convs.map(c=>(
                 <div key={c.id} className={"conv"+(c.id===activeId?" active":"")} onClick={()=>setActiveId(c.id)}>
                   <Avatar name={c.type==="group"?c.name:convTitle(c)} photo={convPhoto(c)} size={46}/>
-                  <div className="meta">
-                    <div className="name">{convTitle(c)}{c.type==="group"&&<span className="tag">GROUPE</span>}</div>
-                    <div className="last">{c.lastMessage||"Nouvelle conversation"}</div>
-                  </div>
+                  <div className="meta"><div className="name">{convTitle(c)}{c.type==="group"&&<span className="tag">GROUPE</span>}</div>
+                    <div className="last">{c.lastMessage||"Nouvelle conversation"}</div></div>
                 </div>
               ))}
             </div>
@@ -550,42 +671,39 @@
               <>
                 <div className="main-head">
                   <button className="back-btn" onClick={()=>setActiveId(null)}>‹</button>
-                  <Avatar name={active.type==="group"?active.name:convTitle(active)} photo={convPhoto(active)} size={40}/>
-                  <div>
-                    <div className="title">{convTitle(active)}</div>
-                    <div className="subtitle">{convSubtitle(active)}</div>
+                  <div className="hid" onClick={()=>active.type==="group"?setMembers(true):setViewUid(otherUid)}>
+                    <Avatar name={active.type==="group"?active.name:convTitle(active)} photo={convPhoto(active)} size={40}/>
+                    <div style={{minWidth:0}}><div className="title">{convTitle(active)}</div><div className="subtitle">{convSubtitle(active)}</div></div>
                   </div>
+                  {active.type==="direct" &&
+                    <div className="call-btns">
+                      <button onClick={()=>startCall(otherUid,"audio")} title="Appel audio">📞</button>
+                      <button onClick={()=>startCall(otherUid,"video")} title="Appel vidéo">🎥</button>
+                    </div>}
                 </div>
                 <div className="messages" ref={scroller}>
                   {messages.length===0 && <div className="placeholder"><div className="big">💬</div>Ecris le premier message.</div>}
                   {messages.map(m=>{
-                    const mine=m.senderId===user.uid;
-                    const media=m.type==="image"||m.type==="audio";
-                    const read=mine&&isRead(m);
+                    const mine=m.senderId===user.uid;const media=m.type==="image"||m.type==="audio";const read=mine&&isRead(m);
                     const senderPhoto=userMap[m.senderId]&&userMap[m.senderId].photoURL;
                     return (
                       <div key={m.id} className={"row "+(mine?"mine":"theirs")}>
-                        <Avatar name={m.senderName} photo={senderPhoto} size={32}/>
+                        <Avatar name={m.senderName} photo={senderPhoto} size={32} onClick={()=>setViewUid(m.senderId)}/>
                         <div className={"bubble "+(mine?"mine":"theirs")+(media?" media":"")}>
                           {!mine && active.type==="group" && <div className="sender" style={{color:colorFor(m.senderName),padding:media?"3px 6px 0":0}}>{m.senderName}</div>}
-                          {m.type==="image" && <img className="msg-img" src={m.url} onClick={()=>window.open(m.url,"_blank")} alt="photo"/>}
+                          {m.type==="image" && <img className="msg-img" src={m.url} onClick={()=>setZoom(m.url)} alt="photo"/>}
                           {m.type==="audio" && <audio className="msg-audio" controls src={m.url}></audio>}
                           {(!m.type||m.type==="text") && <div>{m.text}</div>}
                           <div className="meta-line" style={mine?{color:"rgba(255,255,255,.8)"}:{}}>
-                            <span>{fmtTime(m.createdAt)}</span>
-                            {mine && <span className={"tick"+(read?" read":"")}>{read?"✓✓":"✓"}</span>}
+                            <span>{fmtTime(m.createdAt)}</span>{mine && <span className={"tick"+(read?" read":"")}>{read?"✓✓":"✓"}</span>}
                           </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-
                 {showEmoji && !recording &&
-                  <div className="emoji-panel">
-                    {EMOJIS.map((e,i)=><button key={i} type="button" onClick={()=>setDraft(d=>d+e)}>{e}</button>)}
-                  </div>}
-
+                  <div className="emoji-panel">{EMOJIS.map((e,i)=><button key={i} type="button" onClick={()=>setDraft(d=>d+e)}>{e}</button>)}</div>}
                 <form className="composer" onSubmit={sendText}>
                   <input type="file" accept="image/*" ref={fileRef} style={{display:"none"}} onChange={onPickImage}/>
                   {recording ? (
@@ -596,7 +714,7 @@
                   ) : (
                     <>
                       <button type="button" className="attach" onClick={()=>setShowEmoji(v=>!v)} title="Emojis">😊</button>
-                      <button type="button" className="attach" disabled={uploading} onClick={()=>fileRef.current.click()} title="Envoyer une photo">📎</button>
+                      <button type="button" className="attach" disabled={uploading} onClick={()=>fileRef.current.click()} title="Photo">📎</button>
                       <button type="button" className="attach" disabled={uploading} onClick={toggleRec} title="Note vocale">🎤</button>
                       <input className="txt" value={draft} onChange={e=>setDraft(e.target.value)} onFocus={()=>setShowEmoji(false)}
                         placeholder={uploading?"Envoi en cours...":"Ecris un message..."} disabled={uploading} maxLength={2000}/>
@@ -610,30 +728,40 @@
             )}
           </div>
 
-          {modal && <NewChatModal kind={modal} me={myProfile} users={users} userMap={userMap} onClose={()=>setModal(null)} onCreate={handleCreate}/>}
-          {settings && <SettingsModal profile={myProfile} onClose={()=>setSettings(false)}/>}
+          {modal && <NewChatModal kind={modal} me={myProfile} users={users} onClose={()=>setModal(null)} onCreate={handleCreate}/>}
+          {settings && <SettingsModal profile={myProfile} onClose={()=>setSettings(false)} onZoom={setZoom}/>}
+          {members && active && active.type==="group" && <MembersModal conv={active} userMap={userMap} onClose={()=>setMembers(false)} onPick={(uid)=>{setMembers(false);setViewUid(uid);}}/>}
+          {viewPerson && <ProfileModal person={viewPerson} isMe={viewUid===user.uid} onClose={()=>setViewUid(null)} onZoom={setZoom}
+            onEdit={()=>{setViewUid(null);setSettings(true);}} onMessage={()=>openDirect(viewUid)} onCall={(t)=>startCall(viewUid,t)}/>}
+          {zoom && <div className="lightbox" onClick={()=>setZoom(null)}><button className="close">✕</button><img src={zoom} alt="" onClick={e=>e.stopPropagation()}/></div>}
+
+          {incoming && !call &&
+            <div className="incoming">
+              <Avatar name={incoming.callerName} photo={incoming.photoURL} size={46}/>
+              <div className="who"><b>{incoming.callerName}</b><div>{incoming.type==="video"?"Appel vidéo entrant...":"Appel entrant..."}</div></div>
+              <button className="dec" onClick={()=>declineCall(incoming)} title="Refuser">📵</button>
+              <button className="ans" onClick={()=>acceptCall(incoming)} title="Répondre">📞</button>
+            </div>}
+
+          {call && <CallScreen call={call} localStream={localStream} remoteStream={remoteStream} muted={muted} camOff={camOff}
+            onMute={toggleMute} onCam={toggleCam} onHang={endCall}/>}
         </div>
       );
     }
 
-    /* ---------------- Racine ---------------- */
     function App(){
       const [user,setUser]=useState(undefined);
       useEffect(()=>auth.onAuthStateChanged(async u=>{
-        if(u){await db.collection("users").doc(u.uid).set(
-          {uid:u.uid,email:u.email,displayName:u.displayName||u.email},{merge:true});}
+        if(u){await db.collection("users").doc(u.uid).set({uid:u.uid,email:u.email,displayName:u.displayName||u.email},{merge:true});}
         setUser(u||null);
       }),[]);
       if(user===undefined) return <div className="placeholder" style={{height:"100%",display:"flex",alignItems:"center"}}>Chargement...</div>;
       return user ? <ChatApp user={user}/> : <AuthScreen/>;
     }
-
     ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
   </script>
   <script>
-    if("serviceWorker" in navigator){
-      window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
-    }
+    if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
   </script>
 </body>
 </html>
