@@ -343,6 +343,16 @@
         const p=await Notification.requestPermission();setPerm(p);
         if(p!=="granted")alert("Autorise les notifications dans les réglages du navigateur si besoin.");
       }
+      async function testEmail(){
+        if(!window.emailjs){alert("EmailJS n'est pas chargé (vérifie ta connexion internet).");return;}
+        if(!EMAILJS.publicKey){alert("Les clés EmailJS ne sont pas renseignées dans le code.");return;}
+        try{
+          await emailjs.send(EMAILJS.serviceId,EMAILJS.templateId,{to_email:profile.email,to_name:profile.displayName||"",from_name:"Test",message:"Ceci est un e-mail de test de Bambara's TextBox."});
+          alert("✅ E-mail de test envoyé à "+profile.email+".\nVérifie ta boîte de réception ET le dossier spam.");
+        }catch(e){
+          alert("❌ Échec EmailJS :\n\n"+((e&&(e.text||e.message))||JSON.stringify(e)));
+        }
+      }
       async function deleteAccount(){
         if(!window.confirm("Supprimer définitivement ton compte ? Tu ne pourras plus te connecter."))return;
         const pw=window.prompt("Pour confirmer, saisis ton mot de passe :");
@@ -374,6 +384,10 @@
           <div className="notif-row">
             <span style={{flex:1}}>{perm==="granted"?"✅ Activées (quand l'appli est ouverte ou en arrière-plan)":perm==="unsupported"?"Non disponibles sur ce navigateur":"Désactivées"}</span>
             {perm!=="granted"&&perm!=="unsupported"&&<button className="link-btn" onClick={askNotif}>Activer</button>}
+          </div>
+          <div className="notif-row">
+            <span style={{flex:1}}>✉️ E-mail (envoyé aux personnes hors ligne)</span>
+            <button className="link-btn" onClick={testEmail}>Tester</button>
           </div>
           <h3>Couleur du thème</h3>
           <div className="swatch-row">{THEME_COLORS.map(c=>(
