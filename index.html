@@ -106,7 +106,7 @@
     .tick{font-weight:800;}
     .tick.read{color:#2f9bd1;}
     .composer{display:flex;gap:8px;align-items:center;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--sand);}
-    .composer input.txt{flex:1;border:none;border-radius:22px;padding:12px 16px;font-size:16px;background:var(--paper);outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.06);}
+    .composer input.txt{flex:1;min-width:0;width:0;border:none;border-radius:22px;padding:12px 16px;font-size:16px;background:var(--paper);color:var(--ink);outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.06);}
     .attach{background:var(--paper);border:1px solid var(--line);border-radius:50%;width:42px;height:42px;font-size:18px;flex-shrink:0;}
     .attach:hover{border-color:var(--clay);}
     .attach:disabled{opacity:.4;}
@@ -154,6 +154,8 @@
     .prof .pabout{margin-top:8px;background:var(--sand);border-radius:12px;padding:12px 14px;font-size:15px;width:100%;}
     .prof .palabel{font-size:11px;color:var(--ink-soft);font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-align:left;margin-top:14px;width:100%;}
 
+    .callmsg{align-self:center;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);color:#e9ddc9;font-size:13px;font-weight:700;padding:7px 14px;border-radius:14px;margin:6px 0;}
+    .callmsg .t{opacity:.55;font-size:10px;}
     .sheet{background:var(--paper);border-radius:16px;width:100%;max-width:320px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.45);}
     .sheet button{display:block;width:100%;text-align:left;padding:15px 18px;background:none;border:none;border-bottom:1px solid var(--line);font-size:16px;color:var(--ink);font-weight:700;}
     .sheet button:last-child{border-bottom:none;}
@@ -485,7 +487,7 @@
       const [editing,setEditing]=useState(null);
 
       const scroller=useRef(null),fileRef=useRef(null),recRef=useRef(null),chunksRef=useRef([]);
-      const pcRef=useRef(null),callRefRef=useRef(null),callUnsubs=useRef([]);
+      const pcRef=useRef(null),callRefRef=useRef(null),callUnsubs=useRef([]),callInfoRef=useRef(null);
       const usersRef=useRef([]),activeIdRef=useRef(null),notifSeen=useRef({}),notifInit=useRef(false);
       const ringRef=useRef(null),pressTimer=useRef(null);
       usersRef.current=users; activeIdRef.current=activeId;
@@ -621,14 +623,28 @@
         setLocalStream(ls=>{if(ls)ls.getTracks().forEach(t=>t.stop());return null;});
         setRemoteStream(null);setMuted(false);setCamOff(false);
       }
-      function endCall(){const ref=callRefRef.current;if(ref){ref.update({status:"ended"}).catch(()=>{});setTimeout(()=>ref.delete().catch(()=>{}),1500);}callRefRef.current=null;cleanupCall();setCall(null);}
+      async function logCall(peerUid,callType,status,seconds){
+        const convId=directId(user.uid,peerUid);const ref=db.collection("conversations").doc(convId);
+        try{const snap=await ref.get();if(!snap.exists){const o=userMap[peerUid]||{};await ref.set({type:"direct",members:[user.uid,peerUid],memberNames:{[user.uid]:myName,[peerUid]:o.displayName||"?"},createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:"",lastSenderId:""});}}catch(e){try{const o=userMap[peerUid]||{};await ref.set({type:"direct",members:[user.uid,peerUid],memberNames:{[user.uid]:myName,[peerUid]:o.displayName||"?"},createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:"",lastSenderId:""});}catch(e2){return;}}
+        const prev=(callType==="video"?"🎥 ":"📞 ")+(status==="missed"?"Appel manqué":status==="declined"?"Appel refusé":"Appel");
+        await ref.collection("messages").add({type:"call",callType,callerId:user.uid,status,duration:seconds||0,senderId:user.uid,senderName:myName,createdAt:TS()}).catch(()=>{});
+        await ref.update({lastMessage:prev,lastMessageAt:TS(),lastSenderId:user.uid}).catch(()=>{});
+      }
+      function endCall(reason){
+        if(!callRefRef.current && !callInfoRef.current){setCall(null);return;}
+        const info=callInfoRef.current;const ref=callRefRef.current;
+        callRefRef.current=null;callInfoRef.current=null;
+        if(ref){ref.update({status:"ended"}).catch(()=>{});setTimeout(()=>ref.delete().catch(()=>{}),1500);}
+        if(info && info.dir==="out"){const seconds=info.connected&&info.startAt?Math.round((Date.now()-info.startAt)/1000):0;const status=reason==="declined"?"declined":(info.connected?"completed":"missed");logCall(info.peerUid,info.type,status,seconds);}
+        cleanupCall();setCall(null);
+      }
       function newPC(callRef,localCol,remoteCol){
         const pc=new RTCPeerConnection(ICE);pcRef.current=pc;
         const remote=new MediaStream();setRemoteStream(remote);
         pc.ontrack=e=>{e.streams[0].getTracks().forEach(t=>{if(!remote.getTracks().includes(t))remote.addTrack(t);});setRemoteStream(remote);};
         pc.onicecandidate=e=>{if(e.candidate)callRef.collection(localCol).add(e.candidate.toJSON()).catch(()=>{});};
         pc.onconnectionstatechange=()=>{const st=pc.connectionState;
-          if(st==="connected")setCall(c=>c?{...c,state:"active"}:c);
+          if(st==="connected"){if(callInfoRef.current){callInfoRef.current.connected=true;if(!callInfoRef.current.startAt)callInfoRef.current.startAt=Date.now();}setCall(c=>c?{...c,state:"active"}:c);}
           if(st==="failed"){alert("Connexion de l'appel impossible (réseau trop restrictif).");endCall();}};
         const unsub=callRef.collection(remoteCol).onSnapshot(s=>{s.docChanges().forEach(ch=>{if(ch.type==="added"){try{pc.addIceCandidate(new RTCIceCandidate(ch.doc.data()));}catch(e){}}});});
         callUnsubs.current.push(unsub);return pc;
@@ -640,6 +656,7 @@
         catch(e){alert("Micro/caméra inaccessible. Autorise l'accès dans le navigateur.");return;}
         setLocalStream(stream);
         const callRef=db.collection("calls").doc();callRefRef.current=callRef;
+        callInfoRef.current={dir:"out",peerUid,type,connected:false,startAt:null};
         try{await callRef.set({callerId:user.uid,callerName:myName,calleeId:peerUid,calleeName:peer.displayName,type,status:"ringing",createdAt:TS()});}
         catch(e){alert("Appel impossible. As-tu re-publié les règles Firestore ?\n\n"+e.message);stream.getTracks().forEach(t=>t.stop());setLocalStream(null);callRefRef.current=null;return;}
         const pc=newPC(callRef,"callerCandidates","calleeCandidates");
@@ -651,7 +668,8 @@
           if(d.answer && pcRef.current && !pcRef.current.currentRemoteDescription){
             pcRef.current.setRemoteDescription(new RTCSessionDescription(d.answer)).catch(()=>{});
             setCall(c=>c&&c.state==="ringing"?{...c,state:"connecting"}:c);}
-          if(d.status==="declined"){alert("Appel refusé.");endCall();}});
+          if(d.status==="declined"){endCall("declined");}
+          if(d.status==="ended"){endCall();}});
         callUnsubs.current.push(unsub);setViewUid(null);
       }
       async function acceptCall(inc){
@@ -659,6 +677,7 @@
         catch(e){alert("Micro/caméra inaccessible.");declineCall(inc);return;}
         setLocalStream(stream);setIncoming(null);
         const callRef=db.collection("calls").doc(inc.id);callRefRef.current=callRef;
+        callInfoRef.current={dir:"in",peerUid:inc.callerId,type:inc.type,connected:false,startAt:null};
         const pc=newPC(callRef,"calleeCandidates","callerCandidates");
         stream.getTracks().forEach(t=>pc.addTrack(t,stream));
         let d;try{const snap=await callRef.get();d=snap.data();}catch(e){d=null;}
@@ -683,6 +702,13 @@
       messages.forEach(m=>{
         const day=fmtDay(m.createdAt);
         if(day&&day!==lastDay){rows.push(<div key={"d"+m.id} className="daysep">{day}</div>);lastDay=day;}
+        if(m.type==="call"){
+          const out=m.callerId===user.uid;const ic=m.callType==="video"?"🎥":"📞";
+          let lab; if(m.status==="missed")lab=out?"Appel sans réponse":"Appel manqué";
+          else if(m.status==="declined")lab="Appel refusé";
+          else lab=(out?"Appel émis":"Appel reçu")+(m.duration?" · "+fmtDur(m.duration):"");
+          rows.push(<div key={m.id} className="callmsg">{ic} {lab} <span className="t">{fmtTime(m.createdAt)}</span></div>);return;
+        }
         const mine=m.senderId===user.uid;const media=m.type==="image"||m.type==="audio";const read=mine&&isRead(m);
         const senderPhoto=userMap[m.senderId]&&userMap[m.senderId].photoURL;
         rows.push(
@@ -747,7 +773,7 @@
                       <button onClick={()=>startCall(otherUid,"video")} title="Appel vidéo">🎥</button>
                     </div>}
                 </div>
-                <div className="messages scroll" ref={scroller}>
+                <div className="messages scroll" ref={scroller} onClick={()=>{if(editing){setEditing(null);setDraft("");}}}>
                   {messages.length===0 && <div className="placeholder"><div className="big">💬</div>Ecris le premier message.</div>}
                   {rows}
                 </div>
