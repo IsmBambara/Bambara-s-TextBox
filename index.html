@@ -19,6 +19,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito:wght@400;600;700;800&display=swap');
@@ -208,9 +209,14 @@
       messagingSenderId: "47764558242",
       appId: "1:47764558242:web:e13d483b8dc353f153a2fb"
     };
+    // === Notifications e-mail (optionnel) : cree un compte gratuit sur emailjs.com
+    //     puis colle ici tes 3 identifiants. Laisse vide pour desactiver. ===
+    const EMAILJS = { publicKey:"", serviceId:"", templateId:"" };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    if(EMAILJS.publicKey && window.emailjs){try{emailjs.init({publicKey:EMAILJS.publicKey});}catch(e){}}
     const TS = firebase.firestore.FieldValue.serverTimestamp;
     const ICE = {iceServers:[
       {urls:"stun:stun.l.google.com:19302"},
@@ -265,6 +271,12 @@
           });
         }else{new Notification(title,{body,icon:"icon-192.png"});}
       }catch(e){}
+    }
+
+    function isOnline(u){return !!(u && u.lastActive && (Date.now()-ms(u.lastActive)<90000));}
+    async function emailNotify(toEmail,toName,fromName,message){
+      if(!EMAILJS.publicKey || !window.emailjs || !toEmail)return;
+      try{await emailjs.send(EMAILJS.serviceId,EMAILJS.templateId,{to_email:toEmail,to_name:toName||"",from_name:fromName||"",message:message||""});}catch(e){}
     }
 
     function Avatar({name,photo,size=42,onClick}){
@@ -331,6 +343,17 @@
         const p=await Notification.requestPermission();setPerm(p);
         if(p!=="granted")alert("Autorise les notifications dans les réglages du navigateur si besoin.");
       }
+      async function deleteAccount(){
+        if(!window.confirm("Supprimer définitivement ton compte ? Tu ne pourras plus te connecter."))return;
+        const pw=window.prompt("Pour confirmer, saisis ton mot de passe :");
+        if(!pw)return;
+        try{
+          const cred=firebase.auth.EmailAuthProvider.credential(auth.currentUser.email,pw);
+          await auth.currentUser.reauthenticateWithCredential(cred);
+          await db.collection("users").doc(profile.uid).delete().catch(()=>{});
+          await auth.currentUser.delete();
+        }catch(e){alert("Suppression impossible : "+((e.code==="auth/invalid-credential"||e.code==="auth/wrong-password")?"mot de passe incorrect.":e.message));}
+      }
       return (
         <div className="overlay" onClick={onClose}><div className="modal scroll" onClick={e=>e.stopPropagation()}>
           <h2>Mon profil</h2>
@@ -356,6 +379,8 @@
           <div className="swatch-row">{THEME_COLORS.map(c=>(
             <div key={c} className={"swatch"+((profile.themeColor||"#c8745a")===c?" sel":"")} style={{background:c}} onClick={()=>save({themeColor:c})}/>
           ))}</div>
+          <h3>Compte</h3>
+          <button className="ghost" style={{width:"100%",borderRadius:12,padding:12,fontWeight:800,border:"none",color:"#e0664f",marginBottom:14}} onClick={deleteAccount}>🗑️ Supprimer mon compte</button>
           <div className="modal-actions"><button className="primary" onClick={onClose}>Terminer</button></div>
         </div></div>
       );
@@ -496,10 +521,16 @@
       const scroller=useRef(null),fileRef=useRef(null),recRef=useRef(null),chunksRef=useRef([]);
       const pcRef=useRef(null),callRefRef=useRef(null),callUnsubs=useRef([]),callInfoRef=useRef(null);
       const usersRef=useRef([]),activeIdRef=useRef(null),notifSeen=useRef({}),notifInit=useRef(false);
-      const ringRef=useRef(null),pressTimer=useRef(null);
+      const ringRef=useRef(null),pressTimer=useRef(null),lastEmailed=useRef({});
       usersRef.current=users; activeIdRef.current=activeId;
 
       useEffect(()=>db.collection("users").onSnapshot(s=>setUsers(s.docs.map(d=>d.data()))),[]);
+      useEffect(()=>{
+        const beat=()=>db.collection("users").doc(user.uid).set({lastActive:TS()},{merge:true}).catch(()=>{});
+        beat();const id=setInterval(beat,50000);
+        const onVis=()=>{if(!document.hidden)beat();};document.addEventListener("visibilitychange",onVis);
+        return ()=>{clearInterval(id);document.removeEventListener("visibilitychange",onVis);};
+      },[user.uid]);
 
       useEffect(()=>db.collection("conversations").where("members","array-contains",user.uid).onSnapshot(s=>{
         const list=s.docs.map(d=>({id:d.id,...d.data()}));
@@ -572,7 +603,7 @@
       const otherUid=active&&active.type==="direct"?active.members.find(u=>u!==user.uid):null;
       function convTitle(c){if(!c)return"";if(c.type==="group")return c.name;const o=c.members.find(u=>u!==user.uid);return (c.memberNames&&c.memberNames[o])||"Conversation";}
       function convPhoto(c){if(c.type==="group")return null;const o=c.members.find(u=>u!==user.uid);return userMap[o]&&userMap[o].photoURL;}
-      function convSubtitle(c){if(c.type==="group")return c.members.length+" membres";const o=c.members.find(u=>u!==user.uid);const ab=userMap[o]&&userMap[o].about;return ab||"Conversation privée";}
+      function convSubtitle(c){if(c.type==="group")return c.members.length+" membres";const o=c.members.find(u=>u!==user.uid);const ou=userMap[o];if(ou&&isOnline(ou))return "en ligne";return (ou&&ou.about)||"Conversation privée";}
       function isRead(m){if(!active||!active.reads)return false;const others=active.members.filter(u=>u!==user.uid);if(others.length===0)return false;return others.every(u=>active.reads[u]&&ms(active.reads[u])>=ms(m.createdAt));}
       function unread(c){if(!c.lastSenderId||c.lastSenderId===user.uid||!c.lastMessage)return false;const r=c.reads&&c.reads[user.uid];return ms(c.lastMessageAt)>ms(r||0);}
 
@@ -592,9 +623,11 @@
         const ref=await db.collection("conversations").add({type:"group",name,members:mem,memberNames,createdBy:user.uid,createdAt:TS(),lastMessageAt:TS(),lastMessage:"",lastSenderId:""});
         setModal(null);setActiveId(ref.id);
       }
+      function canEmail(uid){const now=Date.now();if(now-(lastEmailed.current[uid]||0)<300000)return false;lastEmailed.current[uid]=now;return true;}
       async function pushMessage(data,preview){
         await db.collection("conversations").doc(activeId).collection("messages").add({senderId:user.uid,senderName:myName,createdAt:TS(),...data});
         await db.collection("conversations").doc(activeId).update({lastMessage:preview,lastMessageAt:TS(),lastSenderId:user.uid});
+        if(active){active.members.filter(u=>u!==user.uid).forEach(uid=>{const u=userMap[uid];if(u&&u.email&&!isOnline(u)&&canEmail(uid)){emailNotify(u.email,u.displayName,myName,(active.type==="group"?("["+active.name+"] "):"")+preview);}});}
       }
       async function sendText(e){if(e)e.preventDefault();const text=draft.trim();if(!text)return;
         if(editing){try{await db.collection("conversations").doc(activeId).collection("messages").doc(editing.id).update({text,edited:true});}catch(err){alert("Modification impossible : "+err.message);}setEditing(null);setDraft("");setShowEmoji(false);return;}
@@ -671,6 +704,7 @@
         const offer=await pc.createOffer();await pc.setLocalDescription(offer);
         await callRef.update({offer:{type:offer.type,sdp:offer.sdp}});
         setCall({id:callRef.id,peer:{uid:peerUid,name:peer.displayName,photoURL:peer.photoURL},dir:"out",type,state:"ringing",seconds:0});
+        if(peer&&peer.email&&!isOnline(peer)&&canEmail(peerUid)){emailNotify(peer.email,peer.displayName,myName,(type==="video"?"Appel vidéo":"Appel")+" entrant sur Bambara's TextBox. Ouvre l'appli pour répondre.");}
         const unsub=callRef.onSnapshot(snap=>{const d=snap.data();if(!d)return;
           if(d.answer && pcRef.current && !pcRef.current.currentRemoteDescription){
             pcRef.current.setRemoteDescription(new RTCSessionDescription(d.answer)).catch(()=>{});
